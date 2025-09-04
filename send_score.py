@@ -71,17 +71,20 @@ def send_final_score(match_id):
 
     return False
 
+
 # updates a github variable
 def update_github_variable(variable_name, value):
-    url = f"https://api.github.com/repos/{GH_REPO}/actions/variables/{variable_name}"
-    headers = {"Authorization": f"token {GH_TOKEN}", "Accept": "application/vnd.github.v3+json"}
-    data = {"name": variable_name, "value": json.dumps(value)}
-    response = requests.patch(url, json=data)
-    if response.status_code == 204:
-        print(f"Github variable '{variable_name}' updated.")
-    else:
-        print(f"Error updating Github variable: {response.status_code} - {response.text}")
-        raise Exception("Can't find Github variable.")
+    print("Trying to update variable '{variable_name}")
+    value_str = json.dumps(value)
+    command = ["gh", "variable", "set", variable_name, "--body", value_str]
+    
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        print(f"gh cli succesfull")
+    except subprocess.CalledProcessError as e:
+        print(f"FATAL ERROR: gh command failed with exit code: {e.returncode}")
+        print(f"Stderr: {e.stderr}")
+        raise Exception("Couldn't update github variable via gh cli")
     
 
 def get_github_variable(variable_name):
