@@ -20,17 +20,6 @@ jobs:
       - name: Install dependencies
         run: pip install requests pytz discord-webhook
 
-      # --- START VAN DE NIEUWE, CRUCIALE DEBUG-STAP ---
-      - name: 'DEBUG: Inspect token permissions'
-        run: |
-          echo "#####Github REPO: ${{github.repository}}######"
-          echo "--- WHO AM I? ---"
-          curl -i -H "Authorization: Bearer ${{ secrets.GH_PAT }}" https://api.github.com/user
-          
-          echo "--- WHAT ARE MY PERMISSIONS FOR THIS REPO? ---"
-          curl -i -H "Authorization: Bearer ${{ secrets.GH_PAT }}" https://api.github.com/repos/${{ github.repository }}
-      # --- EINDE VAN DE DEBUG-STAP ---
-
       - name: Run match checker script
         env:
           DISCORD_BOT: ${{ secrets.DISCORD_BOT }}
