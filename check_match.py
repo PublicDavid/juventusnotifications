@@ -1,5 +1,6 @@
 import os
 import requests
+import subprocess
 import time
 import pytz
 import json
@@ -63,23 +64,44 @@ def send_daily_reminder(match):
     send_discord_notification(embed)
     daily_reminder_sent_for_date = match_date_str
 
-# updates a github variable
+# updates a github variable by calling the GitHub CLI
 def update_github_variable(variable_name, value):
-    if not GH_TOKEN:
-        raise ValueError("FATAL ERROR: De GH_TOKEN secret is niet gevonden of is leeg!")
-    print(f"Token gevonden, begint met: {GH_TOKEN[:4]}...")
-    url = f"https://api.github.com/repos/{GH_REPO}/actions/variables/{variable_name}"
-    headers = {
-        "Authorization": f"token {os.environ['GH_TOKEN']}",
-        "Accept": "application/vnd.github+json"
-    }
-    data = {"name": variable_name, "value": json.dumps(value)}
-    response = requests.patch(url, json=data)
-    if response.status_code == 204:
-        print(f"Github variable '{variable_name}' updated.")
-    else:
-        print(f"Error updating Github variable: {response.status_code} - {response.text}")
-        raise Exception("Can't find Github variable.")
+    """Update een GitHub Repository Variable door de 'gh' CLI aan te roepen."""
+    print(f"Poging om variabele '{variable_name}' bij te werken via gh CLI...")
+    
+    # Converteer de Python dictionary naar een JSON string
+    value_str = json.dumps(value)
+    
+    # Bouw het commando dat we in de terminal zouden typen
+    command = [
+        "gh",
+        "variable",
+        "set",
+        variable_name,
+        "--body",
+        value_str
+    ]
+    
+    try:
+        # Voer het commando uit en vang de output op
+        result = subprocess.run(
+            command,
+            capture_output=True,
+            text=True,
+            check=True  # Zorgt ervoor dat het script faalt als gh een error geeft
+        )
+        print(f"gh CLI succesvol uitgevoerd. Output: {result.stdout}")
+        print(f"Github variable '{variable_name}' succesvol bijgewerkt.")
+
+    except subprocess.CalledProcessError as e:
+        # Dit blok wordt uitgevoerd als de gh commando een error code teruggeeft
+        print(f"FATALE FOUT: De 'gh' commando faalde met exit code {e.returncode}.")
+        print(f"Stderr: {e.stderr}") # Print de foutmelding van de gh tool
+        raise Exception("Kon Github variable niet bijwerken via gh CLI.")
+    except FileNotFoundError:
+        # Dit gebeurt als de 'gh' tool niet is geïnstalleerd (niet van toepassing op GitHub Actions)
+        print("FATALE FOUT: De 'gh' command-line tool is niet gevonden.")
+        raise
     
 # find the next match and update the variable
 def find_next_match():
@@ -113,3 +135,4 @@ def find_next_match():
 
 if __name__ == "__main__":
     find_next_match()
+
