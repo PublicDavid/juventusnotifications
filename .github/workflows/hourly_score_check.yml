@@ -26,9 +26,10 @@ jobs:
 
       - name: Run score sender script
         env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_BOT }}
+          DISCORD_BOT: ${{ secrets.DISCORD_BOT }}
           GH_TOKEN: ${{ secrets.GH_PAT }}
           GH_REPO: ${{ github.repository }}
         run: python send_score.py
+
 
 
