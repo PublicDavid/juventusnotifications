@@ -10,6 +10,7 @@ jobs:
   check-match:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       actions: write # Job has permissions to write to the variables
     steps:
       - name: Checkout repository
