@@ -8,6 +8,9 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
+      - name: Checkout repository code # <-- DEZE STAP IS TOEGEVOEGD
+        uses: actions/checkout@v4
+
       - name: 'Stap 1: Probeer de variabele te LEZEN met gh'
         env:
           GH_TOKEN: ${{ secrets.GH_PAT }}
