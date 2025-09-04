@@ -3,6 +3,7 @@ import os
 import requests
 import json
 import pytz
+import subprocess
 from discord_webhook import DiscordWebhook, DiscordEmbed
 from datetime import datetime, timedelta, timezone
 
@@ -98,7 +99,7 @@ def get_github_variable(variable_name):
 
 # Checks if game has ended and sends final score
 def check_and_send_final_score():
-    print("Checking if final score is avaialable...")
+    print("Checking if final score is available...")
     match_info_str = get_github_variable('NEXT_MATCH_INFO')
     
     if not match_info_str or match_info_str == "{}":
