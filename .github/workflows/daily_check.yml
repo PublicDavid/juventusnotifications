@@ -23,6 +23,7 @@ jobs:
       # --- START VAN DE NIEUWE, CRUCIALE DEBUG-STAP ---
       - name: 'DEBUG: Inspect token permissions'
         run: |
+          echo "#####Github REPO: ${{github.repository}}######"
           echo "--- WHO AM I? ---"
           curl -i -H "Authorization: Bearer ${{ secrets.GH_PAT }}" https://api.github.com/user
           
