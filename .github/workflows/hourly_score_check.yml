@@ -2,16 +2,13 @@ name: 2. Hourly score checker
 
 on:
   schedule:
-    # Draait elk uur, 5 minuten over het uur
+    # Runs every 20 minutes
     - cron: '*/20 * * * *'
   workflow_dispatch:
 
 jobs:
   send-score:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -30,6 +27,3 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_PAT }}
           GH_REPO: ${{ github.repository }}
         run: python send_score.py
-
-
-
