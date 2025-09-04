@@ -2,13 +2,15 @@ name: 1. Check for future games
 
 on:
   schedule:
-    # Runs everyday at 08:00 UTC (10:00 Belgian summer time)
     - cron: '0 8 * * *'
-  workflow_dispatch: # To manually start
+  workflow_dispatch:
 
 jobs:
   check-match:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -21,9 +23,19 @@ jobs:
       - name: Install dependencies
         run: pip install requests pytz discord-webhook
 
+      # --- START VAN DE NIEUWE, CRUCIALE DEBUG-STAP ---
+      - name: 'DEBUG: Inspect token permissions'
+        run: |
+          echo "--- WHO AM I? ---"
+          curl -i -H "Authorization: Bearer ${{ secrets.GH_PAT }}" https://api.github.com/user
+          
+          echo "--- WHAT ARE MY PERMISSIONS FOR THIS REPO? ---"
+          curl -i -H "Authorization: Bearer ${{ secrets.GH_PAT }}" https://api.github.com/repos/${{ github.repository }}
+      # --- EINDE VAN DE DEBUG-STAP ---
+
       - name: Run match checker script
         env:
           DISCORD_BOT: ${{ secrets.DISCORD_BOT }}
           GH_TOKEN: ${{ secrets.GH_PAT }}
-          GH_REPO: ${{ github.repository }} # Built-in variable
+          GH_REPO: ${{ github.repository }}
         run: python check_match.py
