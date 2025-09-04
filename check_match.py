@@ -69,7 +69,10 @@ def update_github_variable(variable_name, value):
         raise ValueError("FATAL ERROR: De GH_TOKEN secret is niet gevonden of is leeg!")
     print(f"Token gevonden, begint met: {GH_TOKEN[:4]}...")
     url = f"https://api.github.com/repos/{GH_REPO}/actions/variables/{variable_name}"
-    headers = {"Authorization": f"token {GH_TOKEN}", "Accept": "application/vnd.github.v3+json"}
+    headers = {
+        "Authorization": f"Bearer {GH_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
     data = {"name": variable_name, "value": json.dumps(value)}
     response = requests.patch(url, json=data)
     if response.status_code == 204:
