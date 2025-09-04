@@ -27,6 +27,6 @@ jobs:
       - name: Run match checker script
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_BOT }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Built-in token
+          GH_TOKEN: ${{ secrets.GH_PAT }}
           GH_REPO: ${{ github.repository }} # Built-in variable
         run: python check_match.py
