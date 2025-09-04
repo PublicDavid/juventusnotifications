@@ -1,9 +1,9 @@
 import os
 import requests
-import subprocess
 import time
 import pytz
 import json
+import subprocess
 from discord_webhook import DiscordWebhook, DiscordEmbed
 from datetime import datetime, timedelta, timezone
 
@@ -28,14 +28,7 @@ def send_discord_notification(embed):
 
 # --- sends a reminder a day before the match ---
 def send_daily_reminder(match):
-    global daily_reminder_sent_for_date
-
-    match_date_str = match['dateEvent']
-
-    # check if reminder has already been sent for this match date
-    if daily_reminder_sent_for_date == match_date_str:
-        print(f"Reminder already sent for match on {match_date_str}.")
-        return
+    print("Preparing daily reminder")
     
     if match['strHomeTeam'] == TEAM:
         opponent = match['strAwayTeam']
@@ -62,46 +55,20 @@ def send_daily_reminder(match):
     embed.set_footer(text="Fino alla fine! 🖤🤍")
 
     send_discord_notification(embed)
-    daily_reminder_sent_for_date = match_date_str
 
-# updates a github variable by calling the GitHub CLI
+# updates a github variable
 def update_github_variable(variable_name, value):
-    """Update een GitHub Repository Variable door de 'gh' CLI aan te roepen."""
-    print(f"Poging om variabele '{variable_name}' bij te werken via gh CLI...")
-    
-    # Converteer de Python dictionary naar een JSON string
+    print("Trying to update variable '{variable_name}")
     value_str = json.dumps(value)
-    
-    # Bouw het commando dat we in de terminal zouden typen
-    command = [
-        "gh",
-        "variable",
-        "set",
-        variable_name,
-        "--body",
-        value_str
-    ]
+    command = ["gh", "variable", "set", variable_name, "--body", value_str]
     
     try:
-        # Voer het commando uit en vang de output op
-        result = subprocess.run(
-            command,
-            capture_output=True,
-            text=True,
-            check=True  # Zorgt ervoor dat het script faalt als gh een error geeft
-        )
-        print(f"gh CLI succesvol uitgevoerd. Output: {result.stdout}")
-        print(f"Github variable '{variable_name}' succesvol bijgewerkt.")
-
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        print(f"gh cli succesfull")
     except subprocess.CalledProcessError as e:
-        # Dit blok wordt uitgevoerd als de gh commando een error code teruggeeft
-        print(f"FATALE FOUT: De 'gh' commando faalde met exit code {e.returncode}.")
-        print(f"Stderr: {e.stderr}") # Print de foutmelding van de gh tool
-        raise Exception("Kon Github variable niet bijwerken via gh CLI.")
-    except FileNotFoundError:
-        # Dit gebeurt als de 'gh' tool niet is geïnstalleerd (niet van toepassing op GitHub Actions)
-        print("FATALE FOUT: De 'gh' command-line tool is niet gevonden.")
-        raise
+        print(f"FATAL ERROR: gh command failed with exit code: {e.returncode}")
+        print(f"Stderr: {e.stderr}")
+        raise Exception("Couldn't update github variable via gh cli")
     
 # find the next match and update the variable
 def find_next_match():
@@ -126,6 +93,8 @@ def find_next_match():
             match_time_utc = datetime.strptime(f"{match['dateEvent']} {match['strTime']}", "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
             if now_utc.date() == (match_time_utc.date() - timedelta(days=1)):
                 send_daily_reminder(match)
+            else:
+                print("The next day is not tommorow, so no notification is sent")
         else:
             print("Didn't find any upcoming games, resetting variable.")
             update_github_variable('NEXT_MATCH_INFO', {})
@@ -135,4 +104,3 @@ def find_next_match():
 
 if __name__ == "__main__":
     find_next_match()
-
